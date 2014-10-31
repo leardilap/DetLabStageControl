@@ -2,44 +2,77 @@ import sys
 from PyQt4 import QtGui, QtCore, uic
 import PyTango
 
-class YSampleMove(QtGui.QMainWindow):
+class YSample(QtGui.QMainWindow):
 	def __init__(self):
 		QtGui.QMainWindow.__init__(self)
  
 		self.ui = uic.loadUi('GUI_DetLabStage.ui')
 		self.ui.show()
 		
-		self.ym = PyTango.DeviceProxy("anka/motor_detlab/ysample")
+		#Declaring Device
+		self.axis = PyTango.DeviceProxy("anka/motor_detlab/ysample")
+				
+		#Jogging Plus
+		self.connect(self.ui.YSampleJogPlus, QtCore.SIGNAL("pressed()"), self.JogPlus)
+		self.connect(self.ui.YSampleJogPlus, QtCore.SIGNAL("released()"), self.Stop)
 		
-		self.connect(self.ui.YSamplePlus, QtCore.SIGNAL("clicked()"), self.YSamplePlusButton)
-		self.connect(self.ui.YSampleMinus, QtCore.SIGNAL("clicked()"), self.YSampleMinusButton)
-		self.connect(self.ui.YSamplePlus, QtCore.SIGNAL("pressed()"), self.jogPosStart)
-		self.connect(self.ui.YSamplePlus, QtCore.SIGNAL("released()"), self.jogStop)
+		#Jogging Minus
+		self.connect(self.ui.YSampleJogMinus, QtCore.SIGNAL("pressed()"), self.JogMinus)
+		self.connect(self.ui.YSampleJogMinus, QtCore.SIGNAL("released()"), self.Stop)
+		
+		#Home
+		self.connect(self.ui.YSampleHome, QtCore.SIGNAL("clicked()"), self.Home)
+		
+		#Move
+		self.connect(self.ui.YSampleMove, QtCore.SIGNAL("clicked()"), self.Move)
+		
+		#Scroll
+		self.connect(self.ui.YSampleScroll, QtCore.SIGNAL("valueChanged(int)"), self.UpdateDesiredPosScroll)
+		
+		#Updating State - Position
 		self.timer = QtCore.QTimer()
 		self.timer.start(100)
-		self.connect(self.timer, QtCore.SIGNAL("timeout()"), self.updateState)
+		self.connect(self.timer, QtCore.SIGNAL("timeout()"), self.UpdateState)
+		self.connect(self.timer, QtCore.SIGNAL("timeout()"), self.CurrentPosition)
 		
-	def YSamplePlusButton(self):
-	      pass
-	      #x = self.ym.state()
-	      #self.ui.YmoveLabel.setText(str(x))
-	
-	def YSampleMinusButton(self):
-	      pass
-	      #x = self.ym.state()
-	      #self.ui.YmoveLabel.setText(str(x))
+		self.UpdateDesiredPos()
+		
 	      
-	def jogPosStart(self):
-		self.ym.forward()
+	def JogPlus(self):
+		self.axis.forward()
+		
+	def JogMinus(self):
+		self.axis.backward()
+		
+	def Home(self):
+		self.axis.initializeReferencePosition()		
 	    
-	def jogStop(self):
-	    self.ym.stop()
+	def Stop(self):
+		self.axis.stop()
+		self.UpdateDesiredPos()
+		
+	def Move(self):
+		pos = self.ui.YSampleDesirePos1.value()
+		self.axis.position = pos			
+		
+	def UpdateDesiredPosScroll(self):
+		pos = self.ui.YSampleScroll.value()
+		self.ui.YSampleDesirePos1.setValue(-1*pos)	#-1 is for positive values the slider goes left
+	
+	def UpdateDesiredPos(self):
+		pos = self.axis.position
+		self.ui.YSampleDesirePos1.setValue(pos)
+		self.ui.YSampleScroll.setValue(-1*pos)		#-1 is for positive values the slider goes left
+	     
+	def CurrentPosition(self):
+		pos = self.axis.position
+		self.ui.YSampleCurrentPos.display(pos)
 	    
-	def updateState(self):
-	    x = self.ym.state()
-	    self.ui.YSampleMoveLabel.setText(str(x))
+	def UpdateState(self):
+		state = self.axis.state()
+		self.ui.YSampleStatusLabel.setText(str(state))
 	
 if __name__ == "__main__":
 	app = QtGui.QApplication(sys.argv)
-	win = YSampleMove()
+	win = YSample()
 	sys.exit(app.exec_())
