@@ -2,15 +2,18 @@ import sys
 from PyQt4 import QtGui, QtCore, uic
 import PyTango
 
-class YSample(QtGui.QMainWindow):
-	def __init__(self):
+class DetLabStage(QtGui.QMainWindow):
+	def __init__(self, Device, uiFile):
 		QtGui.QMainWindow.__init__(self)
  
-		self.ui = uic.loadUi('GUI_DetLabStage.ui')
+		self.ui = uic.loadUi(uiFile)
 		self.ui.show()
 		
+		#####################################################
+		# Y SAMPLE
+		
 		#Declaring Device
-		self.axis = PyTango.DeviceProxy("anka/motor_detlab/ysample")
+		self.axis = PyTango.DeviceProxy(Device)
 				
 		#Jogging Plus
 		self.connect(self.ui.YSampleJogPlus, QtCore.SIGNAL("pressed()"), self.JogPlus)
@@ -45,23 +48,23 @@ class YSample(QtGui.QMainWindow):
 		self.axis.backward()
 		
 	def Home(self):
-		self.axis.initializeReferencePosition()		
+		self.axis.initializeReferencePosition()	
 	    
 	def Stop(self):
 		self.axis.stop()
 		self.UpdateDesiredPos()
 		
 	def Move(self):
-		pos = self.ui.YSampleDesirePos1.value()
+		pos = self.ui.YSampleDesirePos.value()
 		self.axis.position = pos			
 		
 	def UpdateDesiredPosScroll(self):
 		pos = self.ui.YSampleScroll.value()
-		self.ui.YSampleDesirePos1.setValue(-1*pos)	#-1 is for positive values the slider goes left
+		self.ui.YSampleDesirePos.setValue(-1*pos)	#-1 is for positive values the slider goes left
 	
 	def UpdateDesiredPos(self):
 		pos = self.axis.position
-		self.ui.YSampleDesirePos1.setValue(pos)
+		self.ui.YSampleDesirePos.setValue(pos)
 		self.ui.YSampleScroll.setValue(-1*pos)		#-1 is for positive values the slider goes left
 	     
 	def CurrentPosition(self):
@@ -74,5 +77,7 @@ class YSample(QtGui.QMainWindow):
 	
 if __name__ == "__main__":
 	app = QtGui.QApplication(sys.argv)
-	win = YSample()
+	uiFile = "YSample.ui" #"GUI_DetLabStage.ui"
+	Device = "anka/motor_detlab/ysample"
+	win = DetLabStage(Device, uiFile)
 	sys.exit(app.exec_())
