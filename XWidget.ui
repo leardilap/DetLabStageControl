@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>XWidget</class>
- <widget class="QWidget" name="XWidget">
+ <class>Widget</class>
+ <widget class="QWidget" name="Widget">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,9 +11,9 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>XDet</string>
+   <string>X</string>
   </property>
-  <widget class="QGroupBox" name="XDet">
+  <widget class="QGroupBox" name="Box">
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -23,7 +23,7 @@
     </rect>
    </property>
    <property name="title">
-    <string>X Det</string>
+    <string>X</string>
    </property>
    <widget class="QPushButton" name="Home">
     <property name="geometry">
@@ -234,7 +234,7 @@
      <enum>Qt::Vertical</enum>
     </property>
     <property name="invertedAppearance">
-     <bool>false</bool>
+     <bool>true</bool>
     </property>
     <property name="invertedControls">
      <bool>true</bool>

@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Y</string>
+   <string>Z</string>
   </property>
   <widget class="QGroupBox" name="Box">
    <property name="geometry">
@@ -23,7 +23,7 @@
     </rect>
    </property>
    <property name="title">
-    <string>Y</string>
+    <string>Z</string>
    </property>
    <widget class="QPushButton" name="Home">
     <property name="geometry">
@@ -82,7 +82,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Y-</string>
+     <string>Z-</string>
     </property>
    </widget>
    <widget class="QPushButton" name="JogPlus">
@@ -95,7 +95,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Y+</string>
+     <string>Z+</string>
     </property>
    </widget>
    <widget class="QPushButton" name="Move">
