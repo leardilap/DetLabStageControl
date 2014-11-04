@@ -103,6 +103,7 @@ class Axis(QtGui.QWidget):
 		if tangoEnable:
 			pos = self.axis.position
 			self.ui.DesirePos.setValue(pos)
+			self.ui.Scroll.setValue(pos)
 	     
 	def CurrentPosition(self):
 		if tangoEnable:
@@ -144,27 +145,20 @@ class MainWidget(QtGui.QWidget):
 		YS_Invert = True
 		self.YSample = Axis(self, YS_Title, YS_Device, YS_uiFile, YS_Invert)
 
-		# Z Sample
-		ZS_Title = "Z Sample"
-		ZS_Device = "anka/motor_detlab/zsample"
-		ZS_uiFile = "ZWidget.ui"
-		ZS_Invert = True
-		self.ZSample = Axis(self, ZS_Title, ZS_Device, ZS_uiFile, ZS_Invert)
-
 		##############################################################
 		# DETECTOR
 		# X Detector
 		XD_Title = "X Detector"
 		XD_Device = "anka/motor_detlab/xdet"
 		XD_uiFile = "XWidget.ui"
-		XD_Invert = False
+		XD_Invert = True
 		self.XDetector = Axis(self, XD_Title, XD_Device, XD_uiFile, XD_Invert)
 
 		# Y Detector
 		YD_Title = "Y Detector"
 		YD_Device = "anka/motor_detlab/ydet"
 		YD_uiFile = "YWidget.ui"
-		YD_Invert = False
+		YD_Invert = True
 		self.YDetector = Axis(self, YD_Title, YD_Device, YD_uiFile, YD_Invert)
 
 		# Z Detector
@@ -178,7 +172,6 @@ class MainWidget(QtGui.QWidget):
 		# MAIN WINDOW
 		self.stack.addWidget(self.YSample)
 		self.stack.addWidget(self.XSample)
-		self.stack.addWidget(self.ZSample)
 		self.stack.addWidget(self.YDetector)
 		self.stack.addWidget(self.XDetector)
 		self.stack.addWidget(self.ZDetector)
@@ -187,7 +180,6 @@ class MainWidget(QtGui.QWidget):
 		## and uncomment win.show from main
 		self.XSample.run()
 		self.YSample.run()
-		self.ZSample.run()
 		self.XDetector.run()
 		self.YDetector.run()
 		self.ZDetector.run()

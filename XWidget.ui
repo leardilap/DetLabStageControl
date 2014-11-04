@@ -212,7 +212,7 @@
      </rect>
     </property>
     <property name="maximum">
-     <double>299.000000000000000</double>
+     <double>1015.000000000000000</double>
     </property>
    </widget>
    <widget class="QScrollBar" name="Scroll">
@@ -228,7 +228,7 @@
      <number>0</number>
     </property>
     <property name="maximum">
-     <number>299</number>
+     <number>1015</number>
     </property>
     <property name="orientation">
      <enum>Qt::Vertical</enum>
