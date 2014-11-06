@@ -45,20 +45,20 @@ class Axis(QtGui.QWidget):
 		self.ui.Box.setTitle(Title)
 
 		if Invert:
-			if uiFile == "XWidget.ui":
+			if (uiFile == "XWidget.ui") or (uiFile == "ZWidget.ui"):
 				self.ui.JogPlus.setGeometry(40,150,51,41)
 				self.ui.JogMinus.setGeometry(40,80,51,41)
 				self.ui.Scroll.setInvertedAppearance(not Invert)
-			elif (uiFile == "YWidget.ui") or (uiFile == "ZWidget.ui"):
+			elif uiFile == "YWidget.ui":
 				self.ui.JogPlus.setGeometry(110,50,51,41)
 				self.ui.JogMinus.setGeometry(160,50,51,41)
 				self.ui.Scroll.setInvertedAppearance(Invert)
 		else:
-			if uiFile == "XWidget.ui":
+			if (uiFile == "XWidget.ui") or (uiFile == "ZWidget.ui"):
 				self.ui.JogPlus.setGeometry(40,80,51,41)
 				self.ui.JogMinus.setGeometry(40,150,51,41)
 				self.ui.Scroll.setInvertedAppearance(not Invert)
-			elif (uiFile == "YWidget.ui") or (uiFile == "ZWidget.ui"):
+			elif uiFile == "YWidget.ui":
 				self.ui.JogPlus.setGeometry(160,50,51,41)
 				self.ui.JogMinus.setGeometry(110,50,51,41)
 				self.ui.Scroll.setInvertedAppearance(Invert)
