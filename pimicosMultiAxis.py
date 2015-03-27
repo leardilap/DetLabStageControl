@@ -4,16 +4,14 @@
 
 import sys
 from PyQt4 import QtGui, QtCore, uic
+import PyTango
 
 class pimicosMultiAxis(QtGui.QWidget):
 	def __init__(self):
 		QtGui.QWidget.__init__(self)
 
-		self.tangoEnable = False
-		
-		if self.tangoEnable:
-			import PyTango
-		
+		self.tangoEnable = True
+				
 		# Declaring GUI 
 		self.ui = uic.loadUi('pimicosMultiAxis.ui')
 		self.ui.show()
@@ -25,13 +23,48 @@ class pimicosMultiAxis(QtGui.QWidget):
 		self.pimicosYaw = pimicosYaw(self)
 		
 		self.connect(self.ui.Home, QtCore.SIGNAL("clicked()"), self.Home)
-	
+		self.connect(self.ui.Stop, QtCore.SIGNAL("clicked()"), self.Stop)
+		
+		#Updating Status
+		self.timer = QtCore.QTimer()
+		self.timer.start(100)
+		self.connect(self.timer, QtCore.SIGNAL("timeout()"), self.Status)
+	       
 	def Home(self):
 		if self.tangoEnable:
-			self.axis = PyTango.DeviceProxy("anka/pimicos/G0_Y")
-			self.axis.InitializeReferencePosition()
+			self.pimicosY.axis.InitializeReferencePosition()
 		else:
 			print "Home"
+		
+		self.pimicosY.Init()
+		self.pimicosZ.Init()
+		self.pimicosRoll.Init()
+		self.pimicosPitch.Init()
+		self.pimicosYaw.Init()
+		
+	def Stop(self):
+		if self.tangoEnable:
+			
+			self.pimicosY.axis.Stop()
+		else:
+			print "Stop"
+		self.pimicosY.Init()
+		self.pimicosZ.Init()
+		self.pimicosRoll.Init()
+		self.pimicosPitch.Init()
+		self.pimicosYaw.Init()
+		
+	def Status(self):
+		if self.tangoEnable:
+			if (self.pimicosY.Status == "ok" and self.pimicosZ.Status == "ok" and
+			  self.pimicosRoll.Status == "ok" and self.pimicosPitch.Status == "ok" and 
+			  self.pimicosYaw.Status == "ok"):
+				  self.ui.Status.setStyleSheet("background-color: green")
+			else:
+				  self.ui.Status.setStyleSheet("background-color: red")
+		else:
+			print "Stop"
+			self.ui.Status.setStyleSheet("background-color: green")
 			
 class pimicosY(QtGui.QWidget):
 	def __init__(self, parent):
@@ -84,13 +117,14 @@ class pimicosY(QtGui.QWidget):
 			pos = self.axis.read_attribute('Position')
 		else:
 			pos = 23
-		parent.ui.DesirePos_Y.setValue(pos)
-		parent.ui.Scroll_Y.setValue(pos)
+		parent.ui.DesirePos_Y.setValue(pos.value)
+		parent.ui.Scroll_Y.setValue(pos.value)
 	     
 	def CurrentPosition(self, parent):
 		if parent.tangoEnable:
 			pos = self.axis.read_attribute('Position')
-			parent.ui.CurrentPos_Y.display(pos)
+			parent.ui.CurrentPos_Y.display(pos.value)
+			self.Status = self.axis.Status()
 
 class pimicosZ(QtGui.QWidget):
 	def __init__(self, parent):
@@ -144,13 +178,14 @@ class pimicosZ(QtGui.QWidget):
 			pos = self.axis.read_attribute('Position')
 		else:
 			pos = 23
-		parent.ui.DesirePos_Z.setValue(pos)
-		parent.ui.Scroll_Z.setValue(pos)
+		parent.ui.DesirePos_Z.setValue(pos.value)
+		parent.ui.Scroll_Z.setValue(pos.value)
 	     
 	def CurrentPosition(self, parent):
 		if parent.tangoEnable:
 			pos = self.axis.read_attribute('Position')
-			parent.ui.CurrentPos_Z.display(pos)
+			parent.ui.CurrentPos_Z.display(pos.value)
+			self.Status = self.axis.Status()
 
 class pimicosRoll(QtGui.QWidget):
 	def __init__(self, parent):
@@ -198,7 +233,7 @@ class pimicosRoll(QtGui.QWidget):
 				pos = parent.ui.Dial_Roll.value()
 				self.UpdateDesiredPosFlag = False
 				parent.ui.Scroll_Roll.setValue(pos)
-			parent.ui.DesirePos_Roll.setValue(pos)
+			parent.ui.DesirePos_Roll.setValue(-float(pos)/10)
 	
 	def UpdateDesiredPosEnable(self, parent, SliderDial):
 		self.UpdateDesiredPosFlag = True
@@ -207,8 +242,8 @@ class pimicosRoll(QtGui.QWidget):
 	def UpdateScroll(self, parent):
 		self.UpdateDesiredPosFlag = False
 		pos = parent.ui.DesirePos_Roll.value()
-		parent.ui.Scroll_Roll.setValue(pos)
-		parent.ui.Dial_Roll.setValue(pos)
+		parent.ui.Scroll_Roll.setValue(-pos*10)
+		parent.ui.Dial_Roll.setValue(-pos*10)
 		
 	def Init(self, parent):
 		self.UpdateDesiredPosFlag = False
@@ -216,14 +251,15 @@ class pimicosRoll(QtGui.QWidget):
 			pos = self.axis.read_attribute('Position')
 		else:
 			pos = 2
-		parent.ui.DesirePos_Roll.setValue(pos)
-		parent.ui.Scroll_Roll.setValue(pos)
-		parent.ui.Dial_Roll.setValue(pos)
+		parent.ui.DesirePos_Roll.setValue(pos.value)
+		parent.ui.Scroll_Roll.setValue(-pos.value*10)
+		parent.ui.Dial_Roll.setValue(-pos.value*10)
 	     
 	def CurrentPosition(self, parent):
 		if parent.tangoEnable:
 			pos = self.axis.read_attribute('Position')
-			parent.ui.CurrentPos_Roll.display(pos)
+			parent.ui.CurrentPos_Roll.display(pos.value)
+			self.Status = self.axis.Status()
 			
 class pimicosPitch(QtGui.QWidget):
 	def __init__(self, parent):
@@ -264,14 +300,14 @@ class pimicosPitch(QtGui.QWidget):
 	def UpdateDesiredPos(self, parent):
 		if self.UpdateDesiredPosFlag:
 			if self.SliderDial == 0:
-				pos = parent.ui.Scroll_Pitch.value()
+				pos = -parent.ui.Scroll_Pitch.value()
 				self.UpdateDesiredPosFlag = False
 				parent.ui.Dial_Pitch.setValue(pos)
 			elif self.SliderDial == 1:
 				pos = parent.ui.Dial_Pitch.value()
 				self.UpdateDesiredPosFlag = False
-				parent.ui.Scroll_Pitch.setValue(pos)
-			parent.ui.DesirePos_Pitch.setValue(pos)
+				parent.ui.Scroll_Pitch.setValue(-pos)
+			parent.ui.DesirePos_Pitch.setValue(float(pos)/10)
 	
 	def UpdateDesiredPosEnable(self, parent, SliderDial):
 		self.UpdateDesiredPosFlag = True
@@ -280,8 +316,8 @@ class pimicosPitch(QtGui.QWidget):
 	def UpdateScroll(self, parent):
 		self.UpdateDesiredPosFlag = False
 		pos = parent.ui.DesirePos_Pitch.value()
-		parent.ui.Scroll_Pitch.setValue(pos)
-		parent.ui.Dial_Pitch.setValue(pos)
+		parent.ui.Scroll_Pitch.setValue(-pos*10)
+		parent.ui.Dial_Pitch.setValue(pos*10)
 		
 	def Init(self, parent):
 		self.UpdateDesiredPosFlag = False
@@ -289,14 +325,15 @@ class pimicosPitch(QtGui.QWidget):
 			pos = self.axis.read_attribute('Position')
 		else:
 			pos = 2
-		parent.ui.DesirePos_Pitch.setValue(pos)
-		parent.ui.Scroll_Pitch.setValue(pos)
-		parent.ui.Dial_Pitch.setValue(pos)
+		parent.ui.DesirePos_Pitch.setValue(pos.value)
+		parent.ui.Scroll_Pitch.setValue(-pos.value*10)
+		parent.ui.Dial_Pitch.setValue(pos.value*10)
 	     
 	def CurrentPosition(self, parent):
 		if parent.tangoEnable:
 			pos = self.axis.read_attribute('Position')
-			parent.ui.CurrentPos_Pitch.display(pos)
+			parent.ui.CurrentPos_Pitch.display(pos.value)
+			self.Status = self.axis.Status()
 
 class pimicosYaw(QtGui.QWidget):
 	def __init__(self, parent):
@@ -333,7 +370,7 @@ class pimicosYaw(QtGui.QWidget):
 		if self.UpdateDesiredPosFlag:
 			pos = parent.ui.Dial_Yaw.value()
 			self.UpdateDesiredPosFlag = False
-			parent.ui.DesirePos_Yaw.setValue(pos)
+			parent.ui.DesirePos_Yaw.setValue(float(pos)/10)
 	
 	def UpdateDesiredPosEnable(self, parent):
 		self.UpdateDesiredPosFlag = True
@@ -341,7 +378,7 @@ class pimicosYaw(QtGui.QWidget):
 	def UpdateScroll(self, parent):
 		self.UpdateDesiredPosFlag = False
 		pos = parent.ui.DesirePos_Yaw.value()
-		parent.ui.Dial_Yaw.setValue(pos)
+		parent.ui.Dial_Yaw.setValue(pos*10)
 		
 	def Init(self, parent):
 		self.UpdateDesiredPosFlag = False
@@ -349,13 +386,14 @@ class pimicosYaw(QtGui.QWidget):
 			pos = self.axis.read_attribute('Position')
 		else:
 			pos = 2
-		parent.ui.DesirePos_Yaw.setValue(pos)
-		parent.ui.Dial_Yaw.setValue(pos)
+		parent.ui.DesirePos_Yaw.setValue(pos.value)
+		parent.ui.Dial_Yaw.setValue(pos.value*10)
 	     
 	def CurrentPosition(self, parent):
 		if parent.tangoEnable:
 			pos = self.axis.read_attribute('Position')
-			parent.ui.CurrentPos_Yaw.display(pos)
+			parent.ui.CurrentPos_Yaw.display(pos.value)
+			self.Status = self.axis.Status()
 			
 if __name__ == "__main__":
 	app = QtGui.QApplication(sys.argv)
