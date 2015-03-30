@@ -35,12 +35,18 @@ class pimicosMultiAxis(QtGui.QWidget):
 			self.pimicosY.axis.InitializeReferencePosition()
 		else:
 			print "Home"
-		
-		self.pimicosY.Init()
-		self.pimicosZ.Init()
-		self.pimicosRoll.Init()
-		self.pimicosPitch.Init()
-		self.pimicosYaw.Init()
+		while (self.pimicosY.Status != "ok" and self.pimicosZ.Status != "ok" and
+			  self.pimicosRoll.Status != "ok" and self.pimicosPitch.Status != "ok" and 
+			  self.pimicosYaw.Status != "ok" and self.pimicosY.axis.read_attribute('Position') != 0 and 
+			  self.pimicosZ.axis.read_attribute('Position') != 0 and self.pimicosPitch.axis.read_attribute('Position') != 0 and
+			  self.pimicosRoll.axis.read_attribute('Position') != 0 and self.pimicosYaw.axis.read_attribute('Position') != 0):
+			print "busyH"
+		print "outH"
+		self.pimicosY.Init(self)
+		self.pimicosZ.Init(self)
+		self.pimicosRoll.Init(self)
+		self.pimicosPitch.Init(self)
+		self.pimicosYaw.Init(self)
 		
 	def Stop(self):
 		if self.tangoEnable:
@@ -48,11 +54,16 @@ class pimicosMultiAxis(QtGui.QWidget):
 			self.pimicosY.axis.Stop()
 		else:
 			print "Stop"
-		self.pimicosY.Init()
-		self.pimicosZ.Init()
-		self.pimicosRoll.Init()
-		self.pimicosPitch.Init()
-		self.pimicosYaw.Init()
+		while (self.pimicosY.Status != "ok" and self.pimicosZ.Status != "ok" and
+			  self.pimicosRoll.Status != "ok" and self.pimicosPitch.Status != "ok" and 
+			  self.pimicosYaw.Status != "ok"):
+			print "busyS"
+		print "outS"
+		self.pimicosY.Init(self)
+		self.pimicosZ.Init(self)
+		self.pimicosRoll.Init(self)
+		self.pimicosPitch.Init(self)
+		self.pimicosYaw.Init(self)
 		
 	def Status(self):
 		if self.tangoEnable:
