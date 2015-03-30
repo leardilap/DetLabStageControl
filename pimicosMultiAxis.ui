@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>669</width>
-    <height>431</height>
+    <width>751</width>
+    <height>442</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -457,10 +457,10 @@
          </size>
         </property>
         <property name="minimum">
-         <number>-30</number>
+         <number>0</number>
         </property>
         <property name="maximum">
-         <number>0</number>
+         <number>30</number>
         </property>
         <property name="tracking">
          <bool>false</bool>
@@ -469,10 +469,10 @@
          <enum>Qt::Vertical</enum>
         </property>
         <property name="invertedAppearance">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
         <property name="invertedControls">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
        </widget>
       </item>
@@ -622,10 +622,13 @@
          <bool>false</bool>
         </property>
         <property name="minimum">
-         <number>0</number>
+         <number>-30</number>
         </property>
         <property name="maximum">
-         <number>30</number>
+         <number>0</number>
+        </property>
+        <property name="value">
+         <number>0</number>
         </property>
         <property name="sliderPosition">
          <number>0</number>
@@ -637,10 +640,10 @@
          <enum>Qt::Horizontal</enum>
         </property>
         <property name="invertedAppearance">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
         <property name="invertedControls">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
        </widget>
       </item>
