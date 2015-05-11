@@ -1,3 +1,6 @@
+#! /usr/bin/env python
+
+# Luis Ardila 	leardilap@unal.edu.co 	22/03/15
 import sys
 from PyQt4 import QtGui, QtCore, uic
 
@@ -6,7 +9,7 @@ if tangoEnable:
 	import PyTango
 
 class Axis(QtGui.QWidget):
-	def __init__(self, parent, Title, Device, uiFile, Invert):
+	def __init__(self, parent, Title, Device, uiFile):
 		super(Axis, self).__init__(parent)
  
 		self.ui = uic.loadUi(uiFile)		
@@ -27,7 +30,11 @@ class Axis(QtGui.QWidget):
 		self.connect(self.ui.Home, QtCore.SIGNAL("clicked()"), self.Home)
 		
 		#Move
-		self.connect(self.ui.Move, QtCore.SIGNAL("clicked()"), self.Move)
+		self.connect(self.ui.MoveAB, QtCore.SIGNAL("clicked()"), self.MoveAB)
+		self.connect(self.ui.MoveRE, QtCore.SIGNAL("clicked()"), self.MoveRE)
+		
+		##Stop
+		self.connect(self.ui.Stop, QtCore.SIGNAL("clicked()"), self.Stop)
 		
 		#Scroll
 		self.connect(self.ui.Scroll, QtCore.SIGNAL("valueChanged(int)"), self.UpdateDesiredPosScroll)
@@ -42,27 +49,7 @@ class Axis(QtGui.QWidget):
 		# Initializing Widget
 		self.UpdateDesiredPos()
 		self.ui.setWindowTitle(Title)
-		self.ui.Box.setTitle(Title)
-
-		if Invert:
-			if (uiFile == "XWidget.ui") or (uiFile == "ZWidget.ui"):
-				self.ui.JogPlus.setGeometry(40,150,51,41)
-				self.ui.JogMinus.setGeometry(40,80,51,41)
-				self.ui.Scroll.setInvertedAppearance(not Invert)
-			elif uiFile == "YWidget.ui":
-				self.ui.JogPlus.setGeometry(110,50,51,41)
-				self.ui.JogMinus.setGeometry(160,50,51,41)
-				self.ui.Scroll.setInvertedAppearance(Invert)
-		else:
-			if (uiFile == "XWidget.ui") or (uiFile == "ZWidget.ui"):
-				self.ui.JogPlus.setGeometry(40,80,51,41)
-				self.ui.JogMinus.setGeometry(40,150,51,41)
-				self.ui.Scroll.setInvertedAppearance(not Invert)
-			elif uiFile == "YWidget.ui":
-				self.ui.JogPlus.setGeometry(160,50,51,41)
-				self.ui.JogMinus.setGeometry(110,50,51,41)
-				self.ui.Scroll.setInvertedAppearance(Invert)
-	   
+			   
 	def JogPlus(self):
 		if tangoEnable:
 			self.axis.forward()
@@ -76,11 +63,15 @@ class Axis(QtGui.QWidget):
 			self.ui.StatusLabel.setText("JogMinus")
 		
 	def Home(self):
-		if tangoEnable:
-			self.axis.initializeReferencePosition()	
-		else:
-			self.ui.StatusLabel.setText("Home")
-	    
+		ret = QtGui.QMessageBox.warning(self, "Homming",
+				"Please Check the setup!\nAre you really sure you want to Home motor?",
+				QtGui.QMessageBox.Yes, QtGui.QMessageBox.Cancel | QtGui.QMessageBox.Escape )
+		if ret == QtGui.QMessageBox.Yes:
+			if tangoEnable:
+				self.axis.initializeReferencePosition()	
+			else:
+				self.ui.StatusLabel.setText("Home")
+				
 	def Stop(self):
 		if tangoEnable:
 			self.axis.stop()
@@ -88,13 +79,22 @@ class Axis(QtGui.QWidget):
 			self.ui.StatusLabel.setText("")
 		self.UpdateDesiredPos()
 		
-	def Move(self):
+	def MoveAB(self):
 		pos = self.ui.DesirePos.value()
 		if tangoEnable:
 			self.axis.position = pos	
 		else:
-			self.ui.StatusLabel.setText(str(pos))		
+			self.ui.StatusLabel.setText(str(pos))	
+		self.ui.Scroll.setValue(pos)
 		
+	def MoveRE(self):
+		pos = self.ui.RelativePos.value()
+		if tangoEnable:
+			self.axis.MoveMotorRelative(pos)
+		else:
+			self.ui.StatusLabel.setText(str(pos))
+		self.UpdateDesiredPos()
+	
 	def UpdateDesiredPosScroll(self):
 		pos = self.ui.Scroll.value()
 		self.ui.DesirePos.setValue(pos)
@@ -118,9 +118,6 @@ class Axis(QtGui.QWidget):
 	def run(self):
 		self.ui.show()
 
-	#def __del__(self):
-		#print ("__del__", self)
-
 class MainWidget(QtGui.QWidget):
 	def __init__(self, parent=None):
 		super(MainWidget, self).__init__(parent)
@@ -135,15 +132,13 @@ class MainWidget(QtGui.QWidget):
 		XS_Title = "X Sample"
 		XS_Device = "anka/motor_detlab/xsample"
 		XS_uiFile = "XWidget.ui"
-		XS_Invert = True
-		self.XSample = Axis(self, XS_Title, XS_Device, XS_uiFile, XS_Invert)
+		self.XSample = Axis(self, XS_Title, XS_Device, XS_uiFile)
 
 		# Y Sample
 		YS_Title = "Y Sample"
 		YS_Device = "anka/motor_detlab/ysample"
 		YS_uiFile = "YWidget.ui"
-		YS_Invert = True
-		self.YSample = Axis(self, YS_Title, YS_Device, YS_uiFile, YS_Invert)
+		self.YSample = Axis(self, YS_Title, YS_Device, YS_uiFile)
 
 		##############################################################
 		# DETECTOR
@@ -151,22 +146,19 @@ class MainWidget(QtGui.QWidget):
 		XD_Title = "X Detector"
 		XD_Device = "anka/motor_detlab/xdet"
 		XD_uiFile = "XWidget.ui"
-		XD_Invert = True
-		self.XDetector = Axis(self, XD_Title, XD_Device, XD_uiFile, XD_Invert)
+		self.XDetector = Axis(self, XD_Title, XD_Device, XD_uiFile)
 
 		# Y Detector
 		YD_Title = "Y Detector"
 		YD_Device = "anka/motor_detlab/ydet"
 		YD_uiFile = "YWidget.ui"
-		YD_Invert = True
-		self.YDetector = Axis(self, YD_Title, YD_Device, YD_uiFile, YD_Invert)
+		self.YDetector = Axis(self, YD_Title, YD_Device, YD_uiFile)
 
 		# Z Detector
 		ZD_Title = "Z Detector"
 		ZD_Device = "anka/motor_detlab/zdet"
 		ZD_uiFile = "ZWidget.ui"
-		ZD_Invert = False
-		self.ZDetector = Axis(self, ZD_Title, ZD_Device, ZD_uiFile, ZD_Invert)
+		self.ZDetector = Axis(self, ZD_Title, ZD_Device, ZD_uiFile)
 		
 		################################################################
 		# MAIN WINDOW
@@ -176,21 +168,16 @@ class MainWidget(QtGui.QWidget):
 		self.stack.addWidget(self.XDetector)
 		self.stack.addWidget(self.ZDetector)
 		
-		## This should not be here, fix that all widgets show in one window
-		## and uncomment win.show from main
 		self.XSample.run()
 		self.YSample.run()
 		self.XDetector.run()
 		self.YDetector.run()
 		self.ZDetector.run()
 
-	#def __del__(self):
-		#print ("__del__", self)
 
 if __name__ == "__main__":
 	app = QtGui.QApplication(sys.argv)
 	
 	win = MainWidget()
-	#win.show()
 
 	sys.exit(app.exec_())
