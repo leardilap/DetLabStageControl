@@ -36,6 +36,9 @@ class Axis(QtGui.QWidget):
 		##Stop
 		self.connect(self.ui.Stop, QtCore.SIGNAL("clicked()"), self.Stop)
 		
+		##Limits
+		self.connect(self.ui.Limits, QtCore.SIGNAL("clicked()"), self.Limits)
+		
 		#Scroll
 		self.connect(self.ui.Scroll, QtCore.SIGNAL("valueChanged(int)"), self.UpdateDesiredPosScroll)
 		
@@ -49,6 +52,11 @@ class Axis(QtGui.QWidget):
 		# Initializing Widget
 		self.UpdateDesiredPos()
 		self.ui.setWindowTitle(Title)
+		
+		# Var
+		self.currentPos = 0
+		self.Title = Title
+		self.lenght = self.ui.DesirePos.maximum()
 			   
 	def JogPlus(self):
 		if tangoEnable:
@@ -64,7 +72,7 @@ class Axis(QtGui.QWidget):
 		
 	def Home(self):
 		ret = QtGui.QMessageBox.warning(self, "Homming",
-				"Please Check the setup!\nAre you really sure you want to Home motor?",
+				"Please Check the setup!\n\nAre you sure you really want\nto Home the motor?",
 				QtGui.QMessageBox.Yes, QtGui.QMessageBox.Cancel | QtGui.QMessageBox.Escape )
 		if ret == QtGui.QMessageBox.Yes:
 			if tangoEnable:
@@ -77,7 +85,11 @@ class Axis(QtGui.QWidget):
 			self.axis.stop()
 		else:
 			self.ui.StatusLabel.setText("")
+			
 		self.UpdateDesiredPos()
+		
+	def Limits(self):
+		self.Limits = Limits(self)
 		
 	def MoveAB(self):
 		pos = self.ui.DesirePos.value()
@@ -85,14 +97,28 @@ class Axis(QtGui.QWidget):
 			self.axis.position = pos	
 		else:
 			self.ui.StatusLabel.setText(str(pos))	
+			self.currentPos = self.ui.DesirePos.value()
+			self.ui.CurrentPos.display(self.currentPos)
+			
 		self.ui.Scroll.setValue(pos)
 		
 	def MoveRE(self):
-		pos = self.ui.RelativePos.value()
+		movement = self.ui.RelativePos.value()
+		UpperLimit = self.ui.DesirePos.maximum()
+		LowerLimit = self.ui.DesirePos.minimum()
+		
+		if self.currentPos + movement > UpperLimit:
+			movement = UpperLimit - self.currentPos
+		elif self.currentPos + movement < LowerLimit:
+			movement = LowerLimit - self.currentPos
+			
 		if tangoEnable:
-			self.axis.MoveMotorRelative(pos)
+			self.axis.MoveMotorRelative(movement)
 		else:
-			self.ui.StatusLabel.setText(str(pos))
+			self.ui.StatusLabel.setText(str(movement))
+			self.currentPos = self.currentPos + movement
+			self.ui.CurrentPos.display(self.currentPos)
+			
 		self.UpdateDesiredPos()
 	
 	def UpdateDesiredPosScroll(self):
@@ -107,8 +133,8 @@ class Axis(QtGui.QWidget):
 	     
 	def CurrentPosition(self):
 		if tangoEnable:
-			pos = self.axis.position
-			self.ui.CurrentPos.display(pos)
+			self.currentPos = self.axis.position
+			self.ui.CurrentPos.display(self.currentPos)
 	    
 	def UpdateState(self):
 		if tangoEnable:
@@ -118,6 +144,24 @@ class Axis(QtGui.QWidget):
 	def run(self):
 		self.ui.show()
 
+class Limits(QtGui.QDialog):
+	def __init__(self, parent):
+		QtGui.QDialog.__init__(self, parent)
+				
+		# Declaring GUI 
+		self.ui = uic.loadUi('Limits.ui')
+		self.ui.show()
+		self.connect(self.ui.ButtonBox, QtCore.SIGNAL("accepted()"), lambda: self.accepted(parent))
+		self.ui.setWindowTitle(str(parent.Title + " Limits"))
+		self.ui.UpperLimit.setMaximum(parent.lenght)
+		self.ui.LowerLimit.setMaximum(parent.lenght)
+		self.ui.UpperLimit.setValue(parent.ui.DesirePos.maximum())
+		self.ui.LowerLimit.setValue(parent.ui.DesirePos.minimum())
+		
+	def accepted(self, parent):
+		parent.ui.DesirePos.setMaximum(self.ui.UpperLimit.value())
+		parent.ui.DesirePos.setMinimum(self.ui.LowerLimit.value())
+		
 class MainWidget(QtGui.QWidget):
 	def __init__(self, parent=None):
 		super(MainWidget, self).__init__(parent)
