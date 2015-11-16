@@ -151,16 +151,38 @@ class Limits(QtGui.QDialog):
 		# Declaring GUI 
 		self.ui = uic.loadUi('Limits.ui')
 		self.ui.show()
-		self.connect(self.ui.ButtonBox, QtCore.SIGNAL("accepted()"), lambda: self.accepted(parent))
+		self.connect(self.ui.ButtonBox, QtCore.SIGNAL("accepted()"), lambda: self.Accepted(parent))
+		self.connect(self.ui.UpperLimit, QtCore.SIGNAL("valueChanged(double)"), lambda: self.UpdateUpperLimit(parent))
+		self.connect(self.ui.LowerLimit, QtCore.SIGNAL("valueChanged(double)"), lambda: self.UpdateLowerLimit(parent))
 		self.ui.setWindowTitle(str(parent.Title + " Limits"))
-		self.ui.UpperLimit.setMaximum(parent.lenght)
-		self.ui.LowerLimit.setMaximum(parent.lenght)
+		self.ui.UpperLimit.setMaximum(parent.lenght*2)
+		self.ui.LowerLimit.setMaximum(parent.lenght*2)
+		self.ui.UpperLimit.setMinimum(-parent.lenght*2)
+		self.ui.LowerLimit.setMinimum(-parent.lenght*2)
 		self.ui.UpperLimit.setValue(parent.ui.DesirePos.maximum())
 		self.ui.LowerLimit.setValue(parent.ui.DesirePos.minimum())
-		
-	def accepted(self, parent):
+	
+	def UpdateUpperLimit(self, parent):
+		self.UpperLimit = self.ui.UpperLimit.value()
+		self.LowerLimit = self.ui.LowerLimit.value()
+		if self.UpperLimit - self.LowerLimit > parent.lenght:
+			self.ui.LowerLimit.setValue(self.UpperLimit - parent.lenght)
+		elif self.UpperLimit <= self.LowerLimit:
+			self.ui.LowerLimit.setValue(self.UpperLimit - 1)
+    
+	def UpdateLowerLimit(self, parent):
+		self.UpperLimit = self.ui.UpperLimit.value()
+		self.LowerLimit = self.ui.LowerLimit.value()
+		if self.LowerLimit + parent.lenght < self.UpperLimit:
+			self.ui.UpperLimit.setValue(self.LowerLimit + parent.lenght)
+		elif self.LowerLimit >= self.UpperLimit:
+			self.ui.UpperLimit.setValue(self.LowerLimit + 1)
+			
+	def Accepted(self, parent):
 		parent.ui.DesirePos.setMaximum(self.ui.UpperLimit.value())
 		parent.ui.DesirePos.setMinimum(self.ui.LowerLimit.value())
+		parent.ui.Scroll.setMaximum(self.ui.UpperLimit.value())
+		parent.ui.Scroll.setMinimum(self.ui.LowerLimit.value())
 		
 class MainWidget(QtGui.QWidget):
 	def __init__(self, parent=None):
