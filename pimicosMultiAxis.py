@@ -104,7 +104,7 @@ class pimicosY(QtGui.QWidget):
 		self.Init(parent)
 		
 	def Move(self, parent):
-		pos = parent.ui.DesirePos_Y.value()
+		pos = round(parent.ui.DesirePos_Y.value(),4)
 		if parent.tangoEnable:
 			self.axis.write_attribute('Position',pos)	
 		else:
@@ -165,7 +165,7 @@ class pimicosZ(QtGui.QWidget):
 		self.Init(parent)
 		
 	def Move(self, parent):
-		pos = parent.ui.DesirePos_Z.value()
+		pos = round(parent.ui.DesirePos_Z.value(),4)
 		if parent.tangoEnable:
 			self.axis.write_attribute('Position',pos)	
 		else:
@@ -230,7 +230,7 @@ class pimicosRoll(QtGui.QWidget):
 		self.Init(parent)
 		
 	def Move(self, parent):
-		pos = parent.ui.DesirePos_Roll.value()
+		pos = round(parent.ui.DesirePos_Roll.value(),4)
 		if parent.tangoEnable:
 			self.axis.write_attribute('Position',pos)	
 		else:
@@ -304,7 +304,8 @@ class pimicosPitch(QtGui.QWidget):
 		self.Init(parent)
 		
 	def Move(self, parent):
-		pos = parent.ui.DesirePos_Pitch.value()
+		pos = round(parent.ui.DesirePos_Pitch.value(),4)
+		print pos
 		if parent.tangoEnable:
 			self.axis.write_attribute('Position',pos)	
 		else:
@@ -373,7 +374,7 @@ class pimicosYaw(QtGui.QWidget):
 		self.Init(parent)
 		
 	def Move(self, parent):
-		pos = parent.ui.DesirePos_Yaw.value()
+		pos = round(parent.ui.DesirePos_Yaw.value(),4)
 		if parent.tangoEnable:
 			self.axis.write_attribute('Position',pos)	
 		else:
